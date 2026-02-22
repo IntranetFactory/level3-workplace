@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # 1. Configuration & Slugs
 REPO_NAME=$(basename -s .git $(git config --get remote.origin.url) | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
 RAW_BRANCH=$(git rev-parse --abbrev-ref HEAD | tr '[:upper:]' '[:lower:]')
@@ -30,7 +32,6 @@ pnpm run build
 #    Content-Length headers that the MITM proxy can parse.
 #    Only apply this fix when running inside the GitHub Copilot sandbox.
 if [[ -n "$COPILOT_AGENT_CALLBACK_URL" ]]; then
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   export NODE_OPTIONS="--require ${SCRIPT_DIR}/fix-copilot-proxy-compat.cjs${NODE_OPTIONS:+ $NODE_OPTIONS}"
 fi
 
@@ -82,7 +83,6 @@ fi
 
 echo ""
 echo "Deploy URL: $DEPLOY_URL"
-printf "# Deploy URL\n\n%s\n" "$DEPLOY_URL" > ../../.preview-url.md
+printf "# Deploy URL\n\n%s\n" "$DEPLOY_URL" > "$SCRIPT_DIR/../.preview-url.md"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 "$SCRIPT_DIR/message.sh" "Preview published $DEPLOY_URL"
