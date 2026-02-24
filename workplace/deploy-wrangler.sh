@@ -47,7 +47,7 @@ else
 
   # If the worker does not exist yet, bootstrap it with an initial production deploy
   # (wrangler versions upload fails when no base worker exists)
-  WORKER_STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+  WORKER_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
     "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/scripts/$REPO_NAME" \
     -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 2>/dev/null || echo "000")
   if [[ "$WORKER_STATUS" == "404" ]]; then
