@@ -1,5 +1,27 @@
 # Agent Instructions
 
+> **🔒 CRITICAL: Do not modify this file. It is a shared SOP. Only the human user can update these rules.**
+
+## Project Context
+
+Read `CONTEXT-MEMORY.md` for project-specific architecture, tech stack, and prior discoveries.
+
+You are responsible for maintaining a log of project-specific discoveries and progress in `CONTEXT-MEMORY.md`. Update this file after every major task — record new architectural insights, resolved gotchas, and any decisions that future sessions should know about.
+
+If you make a mistake, encounter a bug that takes more than one attempt to fix, or if I give you a direct preference (e.g., "always run tests"), you MUST:
+
+1.  **Analyze:** Identify the root cause of the error or the core requirement.
+2.  **Record:** Immediately update `CONTEXT-MEMORY.md` with a "Lesson Learned" or "Requirement."
+3.  **Prevent:** Formulate a rule for yourself to prevent this specific issue in the future.
+4.  **Format:** Use a simple list: "- [NEW] Always run `npm test` before committing."
+
+## Workspace
+
+This is a **pnpm workspace monorepo** orchestrated by **Turborepo** (`turbo.json`). All packages live under the `apps/` and `packages/` directories.
+
+- `pnpm` — package manager & workspace orchestration
+- `turbo` — task runner (build, dev, lint pipelines defined in `turbo.json`)
+
 ## Environment
 
 The workspace is provisioned automatically via `workplace/setup.sh` on session start. The following are installed globally and available on PATH:
@@ -12,6 +34,7 @@ The workspace is provisioned automatically via `workplace/setup.sh` on session s
 Do not re-run `setup.sh` manually unless the environment appears broken.
 
 ## Commands
+
 ```bash
 pnpm dev              # start all apps in dev mode (Vite HMR at http://localhost:5173)
 pnpm build            # build all apps
@@ -21,19 +44,23 @@ pnpm lint             # lint all apps
 ## Development vs. Completion
 
 ### During development — fast iteration
+
 Use `pnpm dev` (or `pnpm --filter web dev`) for instant Vite HMR feedback while writing code. Use this freely during a task for rapid iteration. Localhost is a development tool only — **it is not a completion gate**.
 
 ### Task completion — mandatory
+
 A task is **not complete** until it has been deployed to a Cloudflare branch preview and verified there. Do not mark a task done based on localhost behaviour alone.
 
 ## Secrets
 
 Secrets are encrypted in `.env` and decrypted at runtime by dotenvx. The private key is provided via the `DOTENV_PRIVATE_KEY` environment variable (`.env.keys` does not exist in this sandbox). To run a command with secrets available:
+
 ```bash
 dotenvx run -- <command>
 ```
 
 To add or update a secret:
+
 ```bash
 dotenvx set KEY value
 ```
@@ -43,16 +70,17 @@ Never expose or log secret values.
 ## Deployment
 
 Branch previews deploy to Cloudflare Workers. After deployment, the preview URL is written to `.preview-url.md` at the repo root.
+
 ```bash
 pnpm --filter web preview:wrangler   # deploy preview, writes URL to .preview-url.md
 ```
 
 Read `.preview-url.md` to get the URL — do not guess or construct it manually.
 
-
 ## Browser Automation
 
 Use `agent-browser` to verify deployed output or test the running dev server.
+
 ```bash
 agent-browser open <url>
 agent-browser snapshot                   # get accessibility tree with element refs
@@ -62,8 +90,6 @@ agent-browser screenshot --full <path>
 ```
 
 Full skill documentation: `.agents/skills/agent-browser/SKILL.md`
-
-> **Limitation:** `agent-browser` does not work in the Claude Code web sandbox. It works in DevContainer and GitHub Copilot agent environments.
 
 ## Screenshots
 
@@ -76,11 +102,13 @@ Filename format: `YYYYMMDDHHMMSS-<short-title>.png`
 Example: `20240315143022-checkout-flow.png`
 
 When referencing a screenshot in task results or comments, always include:
+
 - The filename/path
 - A short description of what the screenshot shows
 - A confidence score (0–100%) reflecting how well the screenshot demonstrates that the task requirements have been met
 
 Example result comment:
+
 ```
 Screenshot: screenshots/20240315143022-checkout-flow.png
 Description: Cloudflare preview showing the completed checkout flow with all three steps visible and the confirm button enabled.
@@ -92,13 +120,15 @@ Confidence: 92% — all acceptance criteria visible; minor responsive layout not
 When asked to implement and verify a change:
 
 1. Make the change
-2. Use `pnpm dev` during development for fast Vite feedback (localhost is for iteration only)
+2. Use `pnpm dev` during development for fast feedback (localhost is for iteration only)
 3. `pnpm build` — confirm no build errors
 4. `pnpm preview:wrangler` — deploy to Cloudflare via turbo (**run from repo root**)
 5. Read `.preview-url.md` — this is the only valid URL for verification screenshots
+
 ```bash
    cat .preview-url.md   # e.g. https://abc123.your-project.workers.dev
 ```
+
 6. `agent-browser open <url-from-.preview-url.md>` — **use this URL, not localhost**
 7. `agent-browser screenshot --full screenshots/YYYYMMDDHHMMSS-<short-title>.png`
 8. Confirm the screenshot URL/title bar reflects the Cloudflare domain, not localhost
@@ -117,6 +147,7 @@ Always include the Cloudflare preview URL read from `.preview-url.md` as a **bar
 
 ```markdown
 ## Preview
+
 https://copilot-<branch>-agbr-test.ma532.workers.dev
 ```
 
@@ -128,12 +159,14 @@ https://copilot-<branch>-agbr-test.ma532.workers.dev
 Relative paths like `screenshots/file.png` do **not** render in GitHub PR descriptions because GitHub resolves images from the default branch (`main`), not the PR branch. Always use the absolute `raw.githubusercontent.com` URL.
 
 URL format:
+
 ```
 https://raw.githubusercontent.com/IntranetFactory/agbr-test/<branch-name>/screenshots/YYYYMMDDHHMMSS-short-title.png
 ```
 
 ```markdown
 ## Screenshots
+
 ![description](https://raw.githubusercontent.com/IntranetFactory/agbr-test/<branch-name>/screenshots/YYYYMMDDHHMMSS-short-title.png)
 ```
 
@@ -142,14 +175,38 @@ https://raw.githubusercontent.com/IntranetFactory/agbr-test/<branch-name>/screen
 
 > ⚠️ Screenshots mentioned only in comments do NOT satisfy this requirement. They must be **visible inline** in the PR description itself so reviewers can see them without clicking.
 
+### 3. CONTEXT-MEMORY.md update status
+
+Every PR description **must** state whether `CONTEXT-MEMORY.md` was updated and why (or why not). This ensures reviewers know if new architectural insights, tech-stack changes, or discovery-log entries were captured.
+
+```markdown
+## CONTEXT-MEMORY.md
+
+Updated — added discovery log entry for new auth flow.
+```
+
+or
+
+```markdown
+## CONTEXT-MEMORY.md
+
+No update needed — change was a cosmetic CSS fix with no architectural impact.
+```
+
 ### Example `prDescription` for report_progress
 
 ```markdown
 - [x] Changed heading to show URL
 
 ## Preview
+
 https://copilot-my-branch-agbr-test.ma532.workers.dev
 
 ## Screenshots
+
 ![Home page heading showing window.location.href](https://raw.githubusercontent.com/IntranetFactory/agbr-test/copilot/my-branch/screenshots/20240315143022-checkout-flow.png)
+
+## CONTEXT-MEMORY.md
+
+No update needed — cosmetic heading change only.
 ```
