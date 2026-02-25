@@ -17,8 +17,3 @@
 
 Path alias: `@` → `apps/web/src` (configured in `vite.config.ts` and `tsconfig.app.json`).
 
-## Discovery Log
-
-<!-- Append new entries at the top. Format: YYYY-MM-DD — description -->
-
-_No entries yet._

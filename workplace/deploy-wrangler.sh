@@ -2,6 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+rm -f "$SCRIPT_DIR/../.preview-url.md"
 
 # 1. Configuration & Slugs
 REPO_NAME=$(basename -s .git $(git config --get remote.origin.url) | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
@@ -16,12 +17,12 @@ fi
 
 ACCOUNT_ID=$(curl -s "https://api.cloudflare.com/client/v4/accounts" \
   -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-  | jq -r '.result[0].id')
+  | sed -n 's/.*"result" *: *\[ *{ *"id" *: *"\([^"]*\)".*/\1/p')
 echo "Account ID: $ACCOUNT_ID"
 
 CF_SUBDOMAIN=$(curl -s "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/subdomain" \
   -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-  | jq -r '.result.subdomain')
+  | sed -n 's/.*"subdomain" *: *"\([^"]*\)".*/\1/p')
 echo "Workers subdomain: $CF_SUBDOMAIN"
 
 # 3. Build
